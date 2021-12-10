@@ -14,6 +14,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // Replace with secrets file or keystore
+        // Make sure format is correct: https://socketio.github.io/socket.io-client-java/initialization.html
+        buildConfigField("String", "FLEET_ADAPTER_WS_URL", "\"http://192.168.50.45:8008\"")
     }
 
     buildTypes {
