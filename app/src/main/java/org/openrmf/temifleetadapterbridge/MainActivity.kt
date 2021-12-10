@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 import io.socket.client.IO
 import io.socket.client.Socket
+import io.socket.emitter.Emitter
 
 import com.robotemi.sdk.Robot
 import org.openrmf.temifleetadapterbridge.databinding.ActivityMainBinding
@@ -19,6 +20,10 @@ import org.json.JSONObject
 import java.util.*
 import java.util.Collections.singletonList
 import java.util.Collections.singletonMap
+import org.json.JSONException
+
+
+
 
 const val WEBVIEW_URL = "com.openrmf.WEBVIEW_URL"
 const val ROBOT_STATE_EVENT = "robot_state"
@@ -36,18 +41,33 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        robot = getInstance()
+        robot.addOnCurrentPositionChangedListener(this)
+
         val options = IO.Options.builder()
             .setExtraHeaders(
                 singletonMap("robot_name",
                 singletonList(robot_name))
             ).build()
         mSocket = IO.socket(BuildConfig.FLEET_ADAPTER_WS_URL, options)
-        mSocket.connect()
 
-        robot = getInstance()
-        robot.addOnCurrentPositionChangedListener(this)
+        // WebSocket Listener callbacks
+        mSocket.on("goToPosition") {
+            for (item in it) {
+                try {
+                    val jsonData = JSONObject(item.toString()).getString("data")
+                    val data = JSONObject(jsonData)
+                    Log.i("goToPosition", data.getString("x"))
+                } catch (e: RuntimeException) {
+                    Log.e("goToPosition", e.toString())
+                }
+            }
+        }
+
+        mSocket.connect()
     }
 
+    // Temi callbacks
     fun emitWebViewIntent(v: View?) {
         val intent = Intent(this, WebViewActivity::class.java)
         val url = "https://www.google.com"

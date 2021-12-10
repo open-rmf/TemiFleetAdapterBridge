@@ -26,10 +26,16 @@ def disconnect(sid):
 
 @sio.event
 async def robot_state(sid, data):
-    robot_rooms = sio.rooms(sid)
-    for room in robot_rooms:
+    for room in sio.rooms(sid):
         await sio.emit('robot_state', {'data': data}, room=room)
     print('robot_state: ', data)
+
+
+@sio.event
+async def goToPosition(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('goToPosition', {'data': data}, room=room)
+    print('goToPosition: ', data)
 
 
 if __name__ == '__main__':
