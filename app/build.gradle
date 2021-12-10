@@ -17,6 +17,7 @@ android {
         // Replace with secrets file or keystore
         // Make sure format is correct: https://socketio.github.io/socket.io-client-java/initialization.html
         buildConfigField("String", "FLEET_ADAPTER_WS_URL", "\"http://192.168.50.45:8008\"")
+        buildConfigField("String", "ROBOT_NAME", "\"temi_0\"")
     }
 
     buildTypes {
