@@ -34,23 +34,23 @@ while 1:
             print("STOP")
             sio.emit("stopMovement", json.dumps(
                 copy.deepcopy(msg.STOPMOVEMENT_DEFINITION)))
-        elif event.code == "KEY_UP":
+        elif event.code == "KEY_W":
             print("DRIVE")
             json_msg = copy.deepcopy(msg.SKIDJOY_DEFINITION)
             json_msg["x"] = DRIVE_SPEED
             sio.emit("skidJoy", json.dumps(json_msg))
-        elif event.code == "KEY_DOWN":
+        elif event.code == "KEY_S":
             print("REVERSE")
             json_msg = copy.deepcopy(msg.SKIDJOY_DEFINITION)
             json_msg["x"] = DRIVE_SPEED * -1
             sio.emit("skidJoy", json.dumps(json_msg))
-        elif event.code == "KEY_LEFT":
+        elif event.code == "KEY_A":
             print("TURN LEFT")
             json_msg = copy.deepcopy(msg.TURNBY_DEFINITION)
             json_msg["degrees"] = TURN_SENSITIVITY
             json_msg["speed"] = TURN_SPEED
             sio.emit("turnBy", json.dumps(json_msg))
-        elif event.code == "KEY_RIGHT":
+        elif event.code == "KEY_D":
             print("TURN RIGHT")
             json_msg = copy.deepcopy(msg.TURNBY_DEFINITION)
             json_msg["degrees"] = -TURN_SENSITIVITY
