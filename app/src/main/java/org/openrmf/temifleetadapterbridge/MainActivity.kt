@@ -2,6 +2,7 @@ package org.openrmf.temifleetadapterbridge
 import org.openrmf.temifleetadapterbridge.BuildConfig
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -21,6 +22,10 @@ import java.util.*
 import java.util.Collections.singletonList
 import java.util.Collections.singletonMap
 import org.json.JSONException
+import androidx.core.content.IntentCompat
+
+
+
 
 
 
@@ -137,6 +142,7 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
         }
 
         mSocket.on("webView") {
+
             for (item in it) {
                 try {
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
@@ -155,9 +161,10 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
 
     // Temi callbacks
     private fun emitWebViewIntent(url: String) {
-    val intent = Intent(this, WebViewActivity::class.java)
-    intent.putExtra(WEBVIEW_URL, url)
-    startActivity(intent)
+        val intent = Intent(this, WebViewActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        intent.putExtra(WEBVIEW_URL, url)
+        startActivity(intent)
     }
 
     override fun onCurrentPositionChanged(position: Position) {

@@ -2,6 +2,8 @@ package org.openrmf.temifleetadapterbridge
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.webkit.PermissionRequest
+import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +25,12 @@ class WebViewActivity : AppCompatActivity() {
 
         val intent = intent
         val url = intent.getStringExtra(WEBVIEW_URL)
+
+        webView.webChromeClient = object: WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest?) {
+                request?.grant(request.resources)
+            }
+        }
         webView.loadUrl(url)
     }
 }
