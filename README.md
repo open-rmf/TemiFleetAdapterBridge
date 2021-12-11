@@ -12,6 +12,8 @@ apt install scrcpy
 scrcpy --max-size 1024
 
 # Teleop
-pip3 install inputs
+pipenv shell
 usermod -aG input $USER
+python3 mock_fleet_adapter.py
+python3 teleop.py
 ```
