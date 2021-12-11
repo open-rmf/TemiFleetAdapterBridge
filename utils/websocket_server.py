@@ -2,8 +2,6 @@ from aiohttp import web
 import socketio
 
 
-ROBOT_STATE_EVENT = "robot_state"
-
 sio = socketio.AsyncServer(cors_allowed_origins="*")
 app = web.Application()
 sio.attach(app)
