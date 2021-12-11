@@ -1,4 +1,5 @@
 from aiohttp import web
+import argparse
 import socketio
 
 
@@ -72,4 +73,9 @@ async def webView(sid, data):
 
 
 if __name__ == '__main__':
-    web.run_app(app, host="0.0.0.0", port=8008)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, required=False,
+                        help="Port to serve on", default=8008)
+    args = parser.parse_args()
+
+    web.run_app(app, host="0.0.0.0", port=args.port)
