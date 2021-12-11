@@ -10,6 +10,7 @@ adb push
 # Permissions
 adb shell pm grant org.openrmf.temifleetadapterbridge android.permission.CAMERA
 adb shell pm grant org.openrmf.temifleetadapterbridge android.permission.RECORD_AUDIO
+adb shell am start -a android.media.action.VIDEO_CAMERA
 
 # Remote view
 apt install scrcpy
