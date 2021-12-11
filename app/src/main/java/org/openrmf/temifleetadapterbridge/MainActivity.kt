@@ -55,11 +55,97 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
         mSocket.on("goToPosition") {
             for (item in it) {
                 try {
-                    val jsonData = JSONObject(item.toString()).getString("data")
-                    val data = JSONObject(jsonData)
-                    Log.i("goToPosition", data.getString("x"))
+                    val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
+                    val x = jsonData.getString("x").toFloat()
+                    val y = jsonData.getString("y").toFloat()
+                    val tiltAngle = jsonData.getString("tiltAngle").toInt()
+                    val yaw = jsonData.getString("yaw").toFloat()
+
+                    val position = Position(x, y, yaw, tiltAngle)
+                    Log.e("goToPosition", position.toString())
+                    robot.goToPosition(position)
                 } catch (e: RuntimeException) {
                     Log.e("goToPosition", e.toString())
+                }
+            }
+        }
+
+        mSocket.on("tiltBy") {
+            for (item in it) {
+                try {
+                    val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
+                    val degrees = jsonData.getString("degrees").toInt()
+                    val speed = jsonData.getString("speed").toFloat()
+
+
+                    Log.e(
+                        "tiltBy", "Degrees: " + degrees.toString() +
+                                " Speed: " + speed.toString()
+                    )
+                    robot.tiltBy(degrees, speed)
+                } catch (e: RuntimeException) {
+                    Log.e("tiltBy", e.toString())
+                }
+            }
+        }
+
+        mSocket.on("turnBy") {
+            for (item in it) {
+                try {
+                    val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
+                    val degrees = jsonData.getString("degrees").toInt()
+                    val speed = jsonData.getString("speed").toFloat()
+
+
+                    Log.e(
+                        "turnBy", "Degrees: " + degrees.toString() +
+                                " Speed: " + speed.toString()
+                    )
+                    robot.turnBy(degrees, speed)
+                } catch (e: RuntimeException) {
+                    Log.e("turnBy", e.toString())
+                }
+            }
+        }
+
+        mSocket.on("skidJoy") {
+            for (item in it) {
+                try {
+                    val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
+                    val x = jsonData.getString("x").toFloat()
+                    val y = jsonData.getString("y").toFloat()
+
+
+                    Log.e(
+                        "skidJoy", "x: " + x.toString() +
+                                " y: " + y.toString()
+                    )
+                    robot.skidJoy(x, y)
+                } catch (e: RuntimeException) {
+                    Log.e("skidJoy", e.toString())
+                }
+            }
+        }
+
+        mSocket.on("stopMovement") {
+            try {
+                Log.e("stopMovement", "Stop")
+                robot.stopMovement()
+            } catch (e: RuntimeException) {
+                Log.e("stopMovement", e.toString())
+            }
+        }
+
+        mSocket.on("webView") {
+            for (item in it) {
+                try {
+                    val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
+                    val url = jsonData.getString("url")
+
+                    Log.e("webView", "url: " + url.toString())
+                    emitWebViewIntent(url)
+                } catch (e: RuntimeException) {
+                    Log.e("skidJoy", e.toString())
                 }
             }
         }
@@ -68,11 +154,10 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
     }
 
     // Temi callbacks
-    fun emitWebViewIntent(v: View?) {
-        val intent = Intent(this, WebViewActivity::class.java)
-        val url = "https://www.google.com"
-        intent.putExtra(WEBVIEW_URL, url)
-        startActivity(intent)
+    private fun emitWebViewIntent(url: String) {
+    val intent = Intent(this, WebViewActivity::class.java)
+    intent.putExtra(WEBVIEW_URL, url)
+    startActivity(intent)
     }
 
     override fun onCurrentPositionChanged(position: Position) {

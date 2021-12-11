@@ -38,5 +38,40 @@ async def goToPosition(sid, data):
     print('goToPosition: ', data)
 
 
+@sio.event
+async def tiltBy(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('tiltBy', {'data': data}, room=room)
+    print('tiltBy: ', data)
+
+
+@sio.event
+async def turnBy(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('turnBy', {'data': data}, room=room)
+    print('turnBy: ', data)
+
+
+@sio.event
+async def skidJoy(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('skidJoy', {'data': data}, room=room)
+    print('skidJoy: ', data)
+
+
+@sio.event
+async def stopMovement(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('stopMovement', {'data': data}, room=room)
+    print('stopMovement: ', data)
+
+
+@sio.event
+async def webView(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('webView', {'data': data}, room=room)
+    print('webView: ', data)
+
+
 if __name__ == '__main__':
     web.run_app(app, host="0.0.0.0", port=8008)
