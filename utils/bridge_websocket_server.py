@@ -73,10 +73,10 @@ async def stopMovement(sid, data):
 
 
 @sio.event
-async def webView(sid, data):
+async def telepresence(sid, data):
     for room in sio.rooms(sid):
-        await sio.emit('webView', {'data': data}, room=room)
-    print('webView: ', data)
+        await sio.emit('telepresence', {'data': data}, room=room)
+    print('telepresence: ', data)
 
 
 @sio.event

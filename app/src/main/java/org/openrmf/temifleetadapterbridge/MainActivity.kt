@@ -20,7 +20,7 @@ import java.util.Collections.singletonList
 import java.util.Collections.singletonMap
 
 
-const val TELEPRESENCE_ID = "com.openrmf.WEBVIEW_URL"
+const val TELEPRESENCE_ID = "com.openrmf.TELEPRESENCE_ID"
 const val ROBOT_STATE_EVENT = "robot_state"
 const val BATTERY_STATUS_EVENT = "battery_status"
 
@@ -133,17 +133,17 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
             }
         }
 
-        mSocket.on("webView") {
+        mSocket.on("telepresence") {
 
             for (item in it) {
                 try {
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
-                    val url = jsonData.getString("url")
+                    val id = jsonData.getString("id")
 
-                    Log.e("webView", "url: " + url.toString().trim())
-                    emitTelepresenceIntent(url)
+                    Log.e("telepresence", "id: " + id.toString().trim())
+                    emitTelepresenceIntent(id)
                 } catch (e: RuntimeException) {
-                    Log.e("webView", e.toString())
+                    Log.e("telepresence", e.toString())
                 }
             }
         }

@@ -23,8 +23,8 @@ TILTBY_DEFINITION = {
 STOPMOVEMENT_DEFINITION = {
 }
 
-WEBVIEW_DEFINITION = {
-    "url": "https://ros.org"
+TELEPRESENCE_DEFINITION = {
+    "id": "temi0"
 }
 
 GOTO_DEFINITION = {

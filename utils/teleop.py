@@ -77,13 +77,13 @@ while 1:
             if event.state != 1:
                 continue
             print("ENTER ROOM")
-            json_msg = copy.deepcopy(msg.WEBVIEW_DEFINITION)
+            json_msg = copy.deepcopy(msg.TELEPRESENCE_DEFINITION)
             input("WebRTC Room, Press Enter to continue")
-            url = input("Enter Room to enter:").strip()
-            if not url:
+            id = input("Enter Room to enter:").strip()
+            if not id:
                 continue
-            json_msg["url"] = url
-            sio.emit("webView", json.dumps(json_msg))
+            json_msg["id"] = id
+            sio.emit("telepresence", json.dumps(json_msg))
         elif event.code == "KEY_LEFTCTRL":
             if event.state != 1:
                 continue
