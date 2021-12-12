@@ -1,39 +1,30 @@
 package org.openrmf.temifleetadapterbridge
-import org.openrmf.temifleetadapterbridge.BuildConfig
 
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.robotemi.sdk.BatteryData
 
 import io.socket.client.IO
 import io.socket.client.Socket
-import io.socket.emitter.Emitter
 
 import com.robotemi.sdk.Robot
 import org.openrmf.temifleetadapterbridge.databinding.ActivityMainBinding
 import com.robotemi.sdk.Robot.Companion.getInstance
+import com.robotemi.sdk.listeners.OnBatteryStatusChangedListener
 import com.robotemi.sdk.navigation.listener.OnCurrentPositionChangedListener
 import com.robotemi.sdk.navigation.model.Position
 import org.json.JSONObject
-import java.util.*
 import java.util.Collections.singletonList
 import java.util.Collections.singletonMap
-import org.json.JSONException
-import androidx.core.content.IntentCompat
 
 
-
-
-
-
-
-const val WEBVIEW_URL = "com.openrmf.WEBVIEW_URL"
+const val TELEPRESENCE_ID = "com.openrmf.WEBVIEW_URL"
 const val ROBOT_STATE_EVENT = "robot_state"
+const val BATTERY_STATUS_EVENT = "battery_status"
 
-class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
+class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBatteryStatusChangedListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mSocket: Socket
@@ -48,6 +39,7 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
 
         robot = getInstance()
         robot.addOnCurrentPositionChangedListener(this)
+        robot.addOnBatteryStatusChangedListener(this)
 
         val options = IO.Options.builder()
             .setExtraHeaders(
@@ -71,7 +63,7 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
                     robot.goToPosition(position)
                 } catch (e: RuntimeException) {
                     Log.e("goToPosition", e.toString())
-                }
+    }
             }
         }
 
@@ -148,10 +140,25 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
                     val url = jsonData.getString("url")
 
-                    Log.e("webView", "url: " + url.toString())
-                    emitWebViewIntent(url)
+                    Log.e("webView", "url: " + url.toString().trim())
+                    emitTelepresenceIntent(url)
                 } catch (e: RuntimeException) {
-                    Log.e("skidJoy", e.toString())
+                    Log.e("webView", e.toString())
+                }
+            }
+        }
+
+        mSocket.on("goTo") {
+
+            for (item in it) {
+                try {
+                    val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
+                    val url = jsonData.getString("location")
+
+                    Log.e("goTo", "url: " + url.toString().trim())
+                    robot.goTo(url)
+                } catch (e: RuntimeException) {
+                    Log.e("goTo", e.toString())
                 }
             }
         }
@@ -160,10 +167,10 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
     }
 
     // Temi callbacks
-    private fun emitWebViewIntent(url: String) {
-        val intent = Intent(this, WebViewActivity::class.java)
+    private fun emitTelepresenceIntent(id: String) {
+        val intent = Intent(this, ConnectActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        intent.putExtra(WEBVIEW_URL, url)
+        intent.putExtra(TELEPRESENCE_ID, id)
         startActivity(intent)
     }
 
@@ -177,5 +184,14 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener {
         msg.put("yaw", position.yaw)
         msg.put("tiltAngle", position.tiltAngle)
         mSocket.emit(ROBOT_STATE_EVENT, msg.toString())
+    }
+
+    override fun onBatteryStatusChanged(batteryData: BatteryData?) {
+        Log.i("onBatteryStatusChanged",
+            batteryData.toString())
+        var msg = JSONObject()
+        msg.put("level", batteryData?.level)
+        msg.put("isCharging", batteryData?.isCharging)
+        mSocket.emit(BATTERY_STATUS_EVENT, msg.toString())
     }
 }

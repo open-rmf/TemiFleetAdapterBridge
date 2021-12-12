@@ -26,3 +26,13 @@ STOPMOVEMENT_DEFINITION = {
 WEBVIEW_DEFINITION = {
     "url": "https://ros.org"
 }
+
+GOTO_DEFINITION = {
+    "location": "Home Base"
+}
+
+
+BATTERYDATA_DEFINITION = {
+    "level": 100,
+    "isCharging": False
+}

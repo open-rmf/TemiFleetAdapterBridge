@@ -10,6 +10,8 @@
 
 package org.openrmf.temifleetadapterbridge;
 
+import static org.openrmf.temifleetadapterbridge.MainActivityKt.TELEPRESENCE_ID;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -101,7 +103,9 @@ public class ConnectActivity extends Activity {
         return false;
       }
     });
-    roomEditText.requestFocus();
+
+    final Intent intent = getIntent();
+    roomEditText.setText(intent.getStringExtra(TELEPRESENCE_ID).trim());
 
     roomListView = findViewById(R.id.room_listview);
     roomListView.setEmptyView(findViewById(android.R.id.empty));
@@ -113,6 +117,10 @@ public class ConnectActivity extends Activity {
     addFavoriteButton.setOnClickListener(addFavoriteListener);
 
     requestPermissions();
+
+    if (!roomEditText.getText().equals("")) {
+      connectButton.performClick();
+    }
   }
 
   @Override
@@ -177,8 +185,6 @@ public class ConnectActivity extends Activity {
   @Override
   public void onResume() {
     super.onResume();
-    String room = sharedPref.getString(keyprefRoom, "");
-    roomEditText.setText(room);
     roomList = new ArrayList<>();
     String roomListJson = sharedPref.getString(keyprefRoomList, null);
     if (roomListJson != null) {
@@ -254,12 +260,6 @@ public class ConnectActivity extends Activity {
 
   @TargetApi(Build.VERSION_CODES.M)
   private void requestPermissions() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-      // Dynamic permissions are not required before Android M.
-      onPermissionsGranted();
-      return;
-    }
-
     String[] missingPermissions = getMissingPermissions();
     if (missingPermissions.length != 0) {
       requestPermissions(missingPermissions, PERMISSION_REQUEST);
@@ -270,10 +270,6 @@ public class ConnectActivity extends Activity {
 
   @TargetApi(Build.VERSION_CODES.M)
   private String[] getMissingPermissions() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-      return new String[0];
-    }
-
     PackageInfo info;
     try {
       info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_PERMISSIONS);
@@ -615,6 +611,7 @@ public class ConnectActivity extends Activity {
       }
 
       startActivityForResult(intent, CONNECTION_REQUEST);
+      finish();
     }
   }
 

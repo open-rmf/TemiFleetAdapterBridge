@@ -13,6 +13,7 @@ package org.openrmf.temifleetadapterbridge;
 import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.Nullable;
+
 import android.util.Log;
 
 import org.openrmf.temifleetadapterbridge.RoomParametersFetcher.RoomParametersFetcherEvents;

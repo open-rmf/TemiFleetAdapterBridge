@@ -31,6 +31,13 @@ async def robot_state(sid, data):
 
 
 @sio.event
+async def battery_status(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('battery_status', {'data': data}, room=room)
+    print('battery_status: ', data)
+
+
+@sio.event
 async def goToPosition(sid, data):
     for room in sio.rooms(sid):
         await sio.emit('goToPosition', {'data': data}, room=room)
@@ -70,6 +77,13 @@ async def webView(sid, data):
     for room in sio.rooms(sid):
         await sio.emit('webView', {'data': data}, room=room)
     print('webView: ', data)
+
+
+@sio.event
+async def goTo(sid, data):
+    for room in sio.rooms(sid):
+        await sio.emit('goTo', {'data': data}, room=room)
+    print('goTo: ', data)
 
 
 if __name__ == '__main__':

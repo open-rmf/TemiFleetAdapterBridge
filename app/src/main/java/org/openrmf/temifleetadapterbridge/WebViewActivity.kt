@@ -1,10 +1,8 @@
 package org.openrmf.temifleetadapterbridge
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
-import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -24,7 +22,7 @@ class WebViewActivity : AppCompatActivity() {
         webView.isEnabled = false
 
         val intent = intent
-        val url = intent.getStringExtra(WEBVIEW_URL)
+        val url = intent.getStringExtra(TELEPRESENCE_ID)
 
         webView.webChromeClient = object: WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest?) {

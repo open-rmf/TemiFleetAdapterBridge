@@ -25,9 +25,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.crossbar.autobahn.websocket.WebSocketConnection;
-import io.crossbar.autobahn.websocket.exceptions.WebSocketException;
-import io.crossbar.autobahn.websocket.WebSocketConnectionHandler;
+import de.tavendo.autobahn.WebSocket.WebSocketConnectionObserver;
+import de.tavendo.autobahn.WebSocketConnection;
+import de.tavendo.autobahn.WebSocketException;
 
 /**
  * WebSocket client implementation.
@@ -51,7 +51,7 @@ public class WebSocketChannelClient {
   private WebSocketConnectionState state;
   // Do not remove this member variable. If this is removed, the observer gets garbage collected and
   // this causes test breakages.
-  private WebSocketConnectionHandler wsObserver;
+  private WebSocketObserver wsObserver;
   private final Object closeEventLock = new Object();
   private boolean closeEvent;
   // WebSocket send queue. Messages are added to the queue when WebSocket
@@ -97,9 +97,11 @@ public class WebSocketChannelClient {
 
     Log.d(TAG, "Connecting WebSocket to: " + wsUrl + ". Post URL: " + postUrl);
     ws = new WebSocketConnection();
-    wsObserver = new WebSocketConnectionHandler();
+    wsObserver = new WebSocketObserver();
     try {
-      ws.connect(wsServerUrl, wsObserver);
+      ws.connect(new URI(wsServerUrl), wsObserver);
+    } catch (URISyntaxException e) {
+      reportError("URI error: " + e.getMessage());
     } catch (WebSocketException e) {
       reportError("WebSocket connection error: " + e.getMessage());
     }
@@ -120,7 +122,7 @@ public class WebSocketChannelClient {
       json.put("roomid", roomID);
       json.put("clientid", clientID);
       Log.d(TAG, "C->WSS: " + json.toString());
-      ws.sendMessage(json.toString());
+      ws.sendTextMessage(json.toString());
       state = WebSocketConnectionState.REGISTERED;
       // Send any previously accumulated messages.
       for (String sendMessage : wsSendQueue) {
@@ -153,7 +155,7 @@ public class WebSocketChannelClient {
           json.put("msg", message);
           message = json.toString();
           Log.d(TAG, "C->WSS: " + message);
-          ws.sendMessage(message);
+          ws.sendTextMessage(message);
         } catch (JSONException e) {
           reportError("WebSocket send JSON error: " + e.getMessage());
         }
@@ -180,7 +182,7 @@ public class WebSocketChannelClient {
     }
     // Close WebSocket in CONNECTED or ERROR states only.
     if (state == WebSocketConnectionState.CONNECTED || state == WebSocketConnectionState.ERROR) {
-      ws.sendClose();
+      ws.disconnect();
       state = WebSocketConnectionState.CLOSED;
 
       // Wait for websocket close event to prevent websocket library from
@@ -203,10 +205,13 @@ public class WebSocketChannelClient {
 
   private void reportError(final String errorMessage) {
     Log.e(TAG, errorMessage);
-    handler.post(() -> {
-      if (state != WebSocketConnectionState.ERROR) {
-        state = WebSocketConnectionState.ERROR;
-        events.onWebSocketError(errorMessage);
+    handler.post(new Runnable() {
+      @Override
+      public void run() {
+        if (state != WebSocketConnectionState.ERROR) {
+          state = WebSocketConnectionState.ERROR;
+          events.onWebSocketError(errorMessage);
+        }
       }
     });
   }
@@ -234,5 +239,62 @@ public class WebSocketChannelClient {
     if (Thread.currentThread() != handler.getLooper().getThread()) {
       throw new IllegalStateException("WebSocket method is not called on valid thread");
     }
+  }
+
+  private class WebSocketObserver implements WebSocketConnectionObserver {
+    @Override
+    public void onOpen() {
+      Log.d(TAG, "WebSocket connection opened to: " + wsServerUrl);
+      handler.post(new Runnable() {
+        @Override
+        public void run() {
+          state = WebSocketConnectionState.CONNECTED;
+          // Check if we have pending register request.
+          if (roomID != null && clientID != null) {
+            register(roomID, clientID);
+          }
+        }
+      });
+    }
+
+    @Override
+    public void onClose(WebSocketCloseNotification code, String reason) {
+      Log.d(TAG, "WebSocket connection closed. Code: " + code + ". Reason: " + reason + ". State: "
+              + state);
+      synchronized (closeEventLock) {
+        closeEvent = true;
+        closeEventLock.notify();
+      }
+      handler.post(new Runnable() {
+        @Override
+        public void run() {
+          if (state != WebSocketConnectionState.CLOSED) {
+            state = WebSocketConnectionState.CLOSED;
+            events.onWebSocketClose();
+          }
+        }
+      });
+    }
+
+    @Override
+    public void onTextMessage(String payload) {
+      Log.d(TAG, "WSS->C: " + payload);
+      final String message = payload;
+      handler.post(new Runnable() {
+        @Override
+        public void run() {
+          if (state == WebSocketConnectionState.CONNECTED
+              || state == WebSocketConnectionState.REGISTERED) {
+            events.onWebSocketMessage(message);
+          }
+        }
+      });
+    }
+
+    @Override
+    public void onRawTextMessage(byte[] payload) {}
+
+    @Override
+    public void onBinaryMessage(byte[] payload) {}
   }
 }
