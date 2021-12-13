@@ -153,10 +153,10 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
             for (item in it) {
                 try {
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
-                    val url = jsonData.getString("location")
+                    val location = jsonData.getString("location")
 
-                    Log.e("goTo", "url: " + url.toString().trim())
-                    robot.goTo(url)
+                    Log.e("goTo", "location: " + location.toString().trim())
+                    robot.goTo(location)
                 } catch (e: RuntimeException) {
                     Log.e("goTo", e.toString())
                 }
