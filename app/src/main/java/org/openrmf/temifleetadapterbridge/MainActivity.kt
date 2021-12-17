@@ -49,6 +49,17 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
         mSocket = IO.socket(BuildConfig.FLEET_ADAPTER_WS_URL, options)
 
         // WebSocket Listener callbacks
+
+        mSocket.on("disconnect") {
+            try {
+                val location = "home base"
+
+                Log.e("disconnect", "Going back to base on fleet adapter disconnect.")
+                robot.goTo(location)
+            } catch (e: RuntimeException) {
+                Log.e("disconnect", e.toString())
+            }
+        }
         mSocket.on("goToPosition") {
             for (item in it) {
                 try {
