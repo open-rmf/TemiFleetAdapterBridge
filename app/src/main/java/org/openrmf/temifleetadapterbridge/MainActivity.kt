@@ -4,43 +4,67 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.robotemi.sdk.BatteryData
+//import com.robotemi.sdk.BatteryData
 
 import io.socket.client.IO
 import io.socket.client.Socket
 
-import com.robotemi.sdk.Robot
 import org.openrmf.temifleetadapterbridge.databinding.ActivityMainBinding
-import com.robotemi.sdk.Robot.Companion.getInstance
-import com.robotemi.sdk.listeners.OnBatteryStatusChangedListener
-import com.robotemi.sdk.navigation.listener.OnCurrentPositionChangedListener
-import com.robotemi.sdk.navigation.model.Position
+//import com.robotemi.sdk.Robot
+//import com.robotemi.sdk.Robot.Companion.getInstance
+//import com.robotemi.sdk.listeners.OnBatteryStatusChangedListener
+//import com.robotemi.sdk.navigation.listener.OnCurrentPositionChangedListener
+//import com.robotemi.sdk.navigation.model.Position
 import org.json.JSONObject
 import java.util.Collections.singletonList
 import java.util.Collections.singletonMap
+
+import org.jitsi.meet.sdk.*
+import android.content.Context
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import org.jitsi.meet.sdk.*
+import timber.log.Timber
+import java.net.MalformedURLException
+import java.net.URL
 
 
 const val TELEPRESENCE_ID = "com.openrmf.TELEPRESENCE_ID"
 const val ROBOT_STATE_EVENT = "robot_state"
 const val BATTERY_STATUS_EVENT = "battery_status"
 
-class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBatteryStatusChangedListener {
+//class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBatteryStatusChangedListener {
+class MainActivity : AppCompatActivity() {
+
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            onBroadcastReceived(intent)
+        }
+    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var mSocket: Socket
-    private lateinit var robot: Robot
+//    private lateinit var robot: Robot
     private val robot_name = BuildConfig.ROBOT_NAME
-
+    private val serverURL = URL("https://meet.jit.si")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        robot = getInstance()
-        robot.addOnCurrentPositionChangedListener(this)
-        robot.addOnBatteryStatusChangedListener(this)
+        registerForBroadcastMessages()
 
+        // Temi init
+//        robot = getInstance()
+//        robot.addOnCurrentPositionChangedListener(this)
+//        robot.addOnBatteryStatusChangedListener(this)
+
+        // WebSockets init
         val options = IO.Options.builder()
             .setExtraHeaders(
                 singletonMap("robot_name",
@@ -48,16 +72,14 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
             ).build()
         mSocket = IO.socket(BuildConfig.FLEET_ADAPTER_WS_URL, options)
 
-        // WebSocket Listener callbacks
-
         mSocket.on("disconnect") {
             try {
                 val location = "home base"
 
-                Log.e("disconnect", "Going back to base on fleet adapter disconnect.")
-                robot.goTo(location)
+                Timber.tag("disconnect").i("Going back to base on fleet adapter disconnect.")
+//                robot.goTo(location)
             } catch (e: RuntimeException) {
-                Log.e("disconnect", e.toString())
+                Timber.tag("disconnect").e(e.toString())
             }
         }
         mSocket.on("goToPosition") {
@@ -69,12 +91,12 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                     val tiltAngle = jsonData.getString("tiltAngle").toInt()
                     val yaw = jsonData.getString("yaw").toFloat()
 
-                    val position = Position(x, y, yaw, tiltAngle)
-                    Log.e("goToPosition", position.toString())
-                    robot.goToPosition(position)
+//                    val position = Position(x, y, yaw, tiltAngle)
+//                    Log.e("goToPosition", position.toString())
+////                    robot.goToPosition(position)
                 } catch (e: RuntimeException) {
-                    Log.e("goToPosition", e.toString())
-    }
+                    Timber.tag("goToPosition").e(e.toString())
+                }
             }
         }
 
@@ -86,13 +108,11 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                     val speed = jsonData.getString("speed").toFloat()
 
 
-                    Log.e(
-                        "tiltBy", "Degrees: " + degrees.toString() +
-                                " Speed: " + speed.toString()
-                    )
-                    robot.tiltBy(degrees, speed)
+                    Timber.tag( "tiltBy").i(
+                        "Degrees: %s Speed: %s", degrees.toString(), speed.toString() )
+//                    robot.tiltBy(degrees, speed)
                 } catch (e: RuntimeException) {
-                    Log.e("tiltBy", e.toString())
+                    Timber.tag("tiltBy").e(e.toString())
                 }
             }
         }
@@ -105,13 +125,11 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                     val speed = jsonData.getString("speed").toFloat()
 
 
-                    Log.e(
-                        "turnBy", "Degrees: " + degrees.toString() +
-                                " Speed: " + speed.toString()
-                    )
-                    robot.turnBy(degrees, speed)
+                    Timber.tag("turnBy").i(
+                        "Degrees: %s Speed: %s", degrees.toString(), speed.toString())
+//                    robot.turnBy(degrees, speed)
                 } catch (e: RuntimeException) {
-                    Log.e("turnBy", e.toString())
+                    Timber.tag("turnBy").e(e.toString())
                 }
             }
         }
@@ -124,23 +142,20 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                     val y = jsonData.getString("y").toFloat()
 
 
-                    Log.e(
-                        "skidJoy", "x: " + x.toString() +
-                                " y: " + y.toString()
-                    )
-                    robot.skidJoy(x, y)
+                    Timber.tag("skidJoy").i("x: %s y: %s", x.toString(), y.toString())
+//                    robot.skidJoy(x, y)
                 } catch (e: RuntimeException) {
-                    Log.e("skidJoy", e.toString())
+                    Timber.tag("skidJoy").e(e.toString())
                 }
             }
         }
 
         mSocket.on("stopMovement") {
             try {
-                Log.e("stopMovement", "Stop")
-                robot.stopMovement()
+                Timber.tag("stopMovement").i("Stop")
+//                robot.stopMovement()
             } catch (e: RuntimeException) {
-                Log.e("stopMovement", e.toString())
+                Timber.tag("stopMovement").e(e.toString())
             }
         }
 
@@ -150,13 +165,19 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                 try {
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
                     val id = jsonData.getString("id")
+                    LaunchJitsi(id)
 
-                    Log.e("telepresence", "id: " + id.toString().trim())
-                    emitTelepresenceIntent(id)
+                    Timber.tag("telepresence").i("id: %s", id.toString().trim())
                 } catch (e: RuntimeException) {
-                    Log.e("telepresence", e.toString())
+                    Timber.tag("telepresence").e(e.toString())
                 }
             }
+        }
+
+        mSocket.on("telepresenceEnd") {
+
+            Timber.tag("telepresenceEnd").i("Ending Call")
+            hangUp()
         }
 
         mSocket.on("goTo") {
@@ -166,10 +187,10 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
                     val location = jsonData.getString("location")
 
-                    Log.e("goTo", "location: " + location.toString().trim())
-                    robot.goTo(location)
+                    Timber.tag("goTo").i("location: %s", location.toString().trim())
+//                    robot.goTo(location)
                 } catch (e: RuntimeException) {
-                    Log.e("goTo", e.toString())
+                    Timber.tag("goTo").e(e.toString())
                 }
             }
         }
@@ -178,31 +199,82 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
     }
 
     // Temi callbacks
-    private fun emitTelepresenceIntent(id: String) {
-        val intent = Intent(this, ConnectActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        intent.putExtra(TELEPRESENCE_ID, id)
-        startActivity(intent)
+//    override fun onCurrentPositionChanged(position: Position) {
+//        Log.i("onCurrentPositionChanged",
+//            position.toString())
+//
+//        var msg = JSONObject()
+//        msg.put("x", position.x)
+//        msg.put("y", position.y)
+//        msg.put("yaw", position.yaw)
+//        msg.put("tiltAngle", position.tiltAngle)
+//        mSocket.emit(ROBOT_STATE_EVENT, msg.toString())
+//    }
+//
+//    override fun onBatteryStatusChanged(batteryData: BatteryData?) {
+//        Log.i("onBatteryStatusChanged",
+//            batteryData.toString())
+//        var msg = JSONObject()
+//        msg.put("level", batteryData?.level)
+//        msg.put("isCharging", batteryData?.isCharging)
+//        mSocket.emit(BATTERY_STATUS_EVENT, msg.toString())
+//    }
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+        super.onDestroy()
     }
 
-    override fun onCurrentPositionChanged(position: Position) {
-        Log.i("onCurrentPositionChanged",
-            position.toString())
-
-        var msg = JSONObject()
-        msg.put("x", position.x)
-        msg.put("y", position.y)
-        msg.put("yaw", position.yaw)
-        msg.put("tiltAngle", position.tiltAngle)
-        mSocket.emit(ROBOT_STATE_EVENT, msg.toString())
+    fun onButtonClick(v: View?) {
+        val editText = findViewById<EditText>(R.id.room_edittext)
+        val text = editText.text.toString()
+        LaunchJitsi(text)
     }
 
-    override fun onBatteryStatusChanged(batteryData: BatteryData?) {
-        Log.i("onBatteryStatusChanged",
-            batteryData.toString())
-        var msg = JSONObject()
-        msg.put("level", batteryData?.level)
-        msg.put("isCharging", batteryData?.isCharging)
-        mSocket.emit(BATTERY_STATUS_EVENT, msg.toString())
+    fun LaunchJitsi(text: String) {
+        if (text.length > 0) {
+            val options = JitsiMeetConferenceOptions.Builder()
+                .setServerURL(serverURL)
+                .setRoom(text)
+                //.setToken("MyJWT")
+                .setAudioMuted(true)
+                .setWelcomePageEnabled(false)
+                .setConfigOverride("requireDisplayName", false)
+                .build()
+            JitsiMeetActivity.launch(this, options)
+        }
+    }
+
+    private fun registerForBroadcastMessages() {
+        val intentFilter = IntentFilter()
+
+        /* This registers for every possible event sent from JitsiMeetSDK
+           If only some of the events are needed, the for loop can be replaced
+           with individual statements:
+           ex:  intentFilter.addAction(BroadcastEvent.Type.AUDIO_MUTED_CHANGED.action);
+                intentFilter.addAction(BroadcastEvent.Type.CONFERENCE_TERMINATED.action);
+                ... other events
+         */
+        for (type in BroadcastEvent.Type.values()) {
+            intentFilter.addAction(type.action)
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter)
+    }
+
+    // Example for handling different JitsiMeetSDK events
+    private fun onBroadcastReceived(intent: Intent?) {
+        if (intent != null) {
+            val event = BroadcastEvent(intent)
+            when (event.getType()) {
+                BroadcastEvent.Type.CONFERENCE_JOINED -> Timber.i("Conference Joined with url%s", event.getData().get("url"))
+                BroadcastEvent.Type.PARTICIPANT_JOINED -> Timber.i("Participant joined%s", event.getData().get("name"))
+            }
+        }
+    }
+
+    // Example for sending actions to JitsiMeetSDK
+    private fun hangUp() {
+        val hangupBroadcastIntent: Intent = BroadcastIntentHelper.buildHangUpIntent()
+        LocalBroadcastManager.getInstance(org.webrtc.ContextUtils.getApplicationContext()).sendBroadcast(hangupBroadcastIntent)
     }
 }

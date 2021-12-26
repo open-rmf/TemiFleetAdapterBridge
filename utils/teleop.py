@@ -89,7 +89,12 @@ while 1:
                 json_msg["id"] = room_id
                 sio.emit("telepresence", json.dumps(json_msg))
                 input(f"going to {room_id}, press enter to continue")
-            pause_stdout = False
+        elif event.code == "KEY_BACKSLASH":
+            if event.state != 1:
+                continue
+            _print("LEAVE ROOM")
+            json_msg = copy.deepcopy(msg.TELEPRESENCE_DEFINITION)
+            sio.emit("telepresenceEnd", json.dumps(json_msg))
         elif event.code == "KEY_RIGHTCTRL":
             if event.state != 1:
                 continue
