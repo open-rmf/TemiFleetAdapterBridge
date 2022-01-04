@@ -16,8 +16,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Replace with secrets file or keystore
         // Make sure format is correct: https://socketio.github.io/socket.io-client-java/initialization.html
-        buildConfigField("String", "FLEET_ADAPTER_WS_URL", "\"http://192.168.50.195:8008\"")
-        buildConfigField("String", "ROBOT_NAME", "\"temi_0\"")
+        buildConfigField("String", "FLEET_ADAPTER_WS_URL", "\"http://10.8.0.1:8008\"")
+        buildConfigField("String", "ROBOT_NAME", "\"temi_2\"")
     }
 
     buildTypes {
@@ -52,5 +52,5 @@ dependencies {
         exclude group: 'org.json', module: 'json'
     }
 
-    implementation ('org.jitsi.react:jitsi-meet-sdk:3.+') { transitive = true }
+    implementation ('org.jitsi.react:jitsi-meet-sdk:3.10.2') { transitive = true }
 }

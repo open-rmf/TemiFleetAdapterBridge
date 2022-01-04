@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
     private lateinit var mSocket: Socket
     private lateinit var robot: Robot
     private val robot_name = BuildConfig.ROBOT_NAME
-    private val serverURL = URL("https://meet.jit.si")
+    private val serverURL = URL("http://10.8.0.1:8000")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -230,9 +230,9 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
                 .setServerURL(serverURL)
                 .setRoom(text)
                 //.setToken("MyJWT")
-                .setAudioMuted(true)
+                .setAudioMuted(false)
                 .setWelcomePageEnabled(false)
-                .setConfigOverride("requireDisplayName", false)
+//                .setConfigOverride("requireDisplayName", false)
                 .build()
             JitsiMeetActivity.launch(this, options)
         }
