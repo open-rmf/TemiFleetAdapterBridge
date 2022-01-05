@@ -48,7 +48,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
 
-//    implementation 'com.robotemi:sdk:0.10.78'
+    implementation 'com.robotemi:sdk:0.10.78'
     implementation ('io.socket:socket.io-client:2.0.0') {
         exclude group: 'org.json', module: 'json'
     }
