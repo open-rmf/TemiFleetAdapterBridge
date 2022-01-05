@@ -31,6 +31,7 @@ import java.net.URL
 
 
 const val TELEPRESENCE_ID = "com.openrmf.TELEPRESENCE_ID"
+const val VIDEOROOM_URL = "https://10.8.0.1:8443"
 const val ROBOT_STATE_EVENT = "robot_state"
 const val BATTERY_STATUS_EVENT = "battery_status"
 
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
     private lateinit var mSocket: Socket
     private lateinit var robot: Robot
     private val robot_name = BuildConfig.ROBOT_NAME
-    private val serverURL = URL("http://10.8.0.1:8000")
+    private val serverURL = URL(VIDEOROOM_URL)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
