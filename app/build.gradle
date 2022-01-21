@@ -17,7 +17,7 @@ android {
         // Replace with secrets file or keystore
         // Make sure format is correct: https://socketio.github.io/socket.io-client-java/initialization.html
         buildConfigField("String", "VIDEOROOM_URL", "\"https://meet.jit.si\"")
-        buildConfigField("String", "FLEET_ADAPTER_WS_URL", "\"http://10.8.0.1:8008\"")
+        buildConfigField("String", "FLEET_ADAPTER_WS_URL", "\"http://10.11.12.3:8000\"")
         buildConfigField("String", "ROBOT_NAME", "\"temi_2\"")
     }
 
@@ -48,7 +48,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
 
-//    implementation 'com.robotemi:sdk:0.10.78'
+    implementation 'com.robotemi:sdk:0.10.78'
     implementation ('io.socket:socket.io-client:2.0.0') {
         exclude group: 'org.json', module: 'json'
     }

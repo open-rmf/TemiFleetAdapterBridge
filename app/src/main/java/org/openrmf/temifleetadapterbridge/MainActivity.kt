@@ -61,17 +61,26 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
         robot.addOnBatteryStatusChangedListener(this)
 
         // WebSockets init
-        val options = IO.Options.builder()
-            .setExtraHeaders(
-                singletonMap("robot_name",
-                singletonList(robot_name))
-            ).build()
-        mSocket = IO.socket(BuildConfig.FLEET_ADAPTER_WS_URL, options)
+        mSocket = IO.socket(BuildConfig.FLEET_ADAPTER_WS_URL)
+
+        mSocket.on("connect") {
+            Timber.tag("connect").i("Connected to RMF Server")
+            var subTopics = arrayOf(
+                "/teleoperation/video/$robot_name/join_room"
+            )
+            for (topic in subTopics) {
+                Timber.tag("connect").i("Subscribing to $topic")
+                var json = JSONObject()
+                json.put("room", topic)
+                mSocket.emit("subscribe", json)
+            }
+        }
 
         mSocket.on("disconnect") {
             try {
                 val location = "home base"
 
+                Timber.tag("disconnect").i("Disconnected from RMF Server.")
                 Timber.tag("disconnect").i("Going back to base on fleet adapter disconnect.")
                 robot.goTo(location)
             } catch (e: RuntimeException) {
@@ -155,17 +164,17 @@ class MainActivity : AppCompatActivity(), OnCurrentPositionChangedListener, OnBa
             }
         }
 
-        mSocket.on("telepresence") {
+        mSocket.on("/teleoperation/video/$robot_name/join_room") {
 
             for (item in it) {
                 try {
                     val jsonData = JSONObject(JSONObject(item.toString()).getString("data"))
-                    val id = jsonData.getString("id")
+                    val id = jsonData.getString("url")
                     LaunchJitsi(id)
 
-                    Timber.tag("telepresence").i("id: %s", id.toString().trim())
+                    Timber.tag("join_room").i("id: %s", id.toString().trim())
                 } catch (e: RuntimeException) {
-                    Timber.tag("telepresence").e(e.toString())
+                    Timber.tag("join_room").e(e.toString())
                 }
             }
         }
